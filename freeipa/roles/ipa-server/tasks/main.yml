@@ -1,0 +1,42 @@
+- name: Install the ipa-server and ipa-server-dns packages
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+  - ipa-server
+  - ipa-server-dns
+
+- name: Setup hostname
+  hostname:
+    name: "{{ server_hostname }}"
+
+- name: Add IP address of all hosts to all hosts
+  lineinfile:
+    dest: /etc/hosts
+    regexp: "{{ hostvars[item].ansible_default_ipv4.address }}"
+    line: "{{ hostvars[item].ansible_default_ipv4.address }} {{ hostvars[item].ansible_hostname }}.{{ domain }} {{ hostvars[item].ansible_hostname }}"
+    state: present
+  when: hostvars[item].ansible_default_ipv4.address is defined
+  with_items: "{{ groups['all'] }}"
+
+- name: Open the ports in the firewall
+  firewalld: 
+    service: "{{ item }}"
+    state: enabled
+    permanent: true
+  with_items:
+  - ntp
+  - http
+  - https
+  - ldap
+  - kerberos
+  - kpasswd
+  - dns
+
+- name: Reload firewalld
+  systemd:
+    name: firewalld
+    state: reloaded
+      
+- name: Run the ipa-server-install command
+  command: ipa-server-install -U --setup-dns --hostname={{ ansible_hostname }}.{{ domain }} --domain={{ domain }} --realm={{ realm }} --ds-password={{ directory_manager_password }} --admin-password={{ principal_user_password }} --forwarder={{ dns_forwarder_1 }} --forwarder={{ dns_forwarder_2 }}

@@ -1,0 +1,8 @@
+server_hostname: freeipa-01.ezylinux.com
+domain: ezylinux.com
+realm: EZYLINUX.COM
+principal_user: admin
+principal_user_password: SecretPassWD
+directory_manager_password: SecretPassWD
+dns_forwarder_1: 8.8.8.8
+dns_forwarder_2: 8.8.4.4

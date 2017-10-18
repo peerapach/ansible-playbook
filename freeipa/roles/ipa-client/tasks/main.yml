@@ -1,0 +1,12 @@
+- name: Install FreeIPA client
+  package:
+    name: freeipa-client
+    state: present
+
+- name: Setup IPA client
+  command: ipa-client-install -U --domain={{ domain }} --server={{ server_hostname }} --realm={{ realm }} --password={{ principal_user_password }} --principal={{ principal_user }} --mkhomedir --hostname={{ ansible_hostname }}
+
+#- name: Enable ipa-client on boot
+#  systemd:
+#    name: ipa-client
+#    state: enabled

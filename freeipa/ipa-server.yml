@@ -1,0 +1,5 @@
+- hosts: ipa-server
+  gather_facts: true
+  user: root
+  roles:
+    - ipa-server

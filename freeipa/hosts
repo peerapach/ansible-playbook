@@ -1,0 +1,5 @@
+[ipa-server]
+192.168.56.101 ansible_port=22 ansible_hostname=freeipa-01.ezylinux.com
+
+[ipa-client]
+192.168.56.102 ansible_port=22 ansible_hostname=node1.ezylinux.com
