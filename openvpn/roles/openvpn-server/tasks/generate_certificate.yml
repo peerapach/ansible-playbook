@@ -1,0 +1,43 @@
+- name: Check Diffie-Hellman file - exists?
+  stat: path=/etc/openvpn/dh.pem
+  register: dh_file
+
+- name: Create Diffie-Hellman
+  command: openssl dhparam -out /etc/openvpn/dh.pem 2048
+  when: dh_file.stat.exists == false
+
+- name: Check CA file
+  stat: path=/etc/openvpn/ca.pem
+  register: ca_file
+
+- name: Create CA
+  command: "{{ item }}"
+  with_items:
+  - openssl genrsa -out /etc/openvpn/ca-key.pem 2048 && chmod 600 /etc/openvpn/ca-key.pem 
+  - openssl req -new -key /etc/openvpn/ca-key.pem -out /etc/openvpn/ca-csr.pem -subj /CN=OpenVPN-CA/
+  - openssl x509 -req -in /etc/openvpn/ca-csr.pem -out /etc/openvpn/ca.pem -signkey /etc/openvpn/ca-key.pem -days 3650
+  when: ca_file.stat.exists == false
+
+- name: Check certificate file for server side
+  stat: path=/etc/openvpn/server-cert.pem
+  register: cert_server_file  
+
+- name: Create certificate for server side
+  command: "{{ item }}"
+  with_items:
+  - openssl genrsa -out /etc/openvpn/server-key.pem 2048 && chmod 600 /etc/openvpn/server-key.pem
+  - openssl req -new -key /etc/openvpn/server-key.pem -out /etc/openvpn/server-csr.pem -subj /CN=OpenVPN/
+  - openssl x509 -req -in /etc/openvpn/server-csr.pem -out /etc/openvpn/server-cert.pem -CAcreateserial -CA /etc/openvpn/ca.pem -CAkey /etc/openvpn/ca-key.pem -days 3650
+  when: cert_server_file.stat.exists == false
+
+- name: Check certificate for client side
+  stat: path=/etc/openvpn/client-cert.pem
+  register: cert_client_file
+
+- name: Create certificate for client
+  command: "{{ item }}"
+  with_items:
+  - openssl genrsa -out /etc/openvpn/client-key.pem 2048 && chmod 600 /etc/openvpn/client-key.pem
+  - openssl req -new -key /etc/openvpn/client-key.pem -out /etc/openvpn/client-csr.pem -subj /CN=OpenVPN-Client/
+  - openssl x509 -req -in /etc/openvpn/client-csr.pem -out /etc/openvpn/client-cert.pem -CA /etc/openvpn/ca.pem -CAkey /etc/openvpn/ca-key.pem -days 3650
+  when: cert_client_file.stat.exists == false

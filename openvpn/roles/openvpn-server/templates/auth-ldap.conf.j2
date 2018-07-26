@@ -1,0 +1,18 @@
+<LDAP>
+	# LDAP server URL
+	URL		    "{{ ldap_url }}"
+	BindDN		"{{ bind_dn }}"
+	Password	"{{ ldap_password }}"
+	Timeout		15
+</LDAP>
+
+<Authorization>
+	BaseDN		    "{{ base_dn }}"
+	SearchFilter	"{{ ldap_search_filter }}"
+	RequireGroup	true
+	<Group>
+		BaseDN		"{{ group_base_dn }}"
+		SearchFilter	"{{ group_ldap_search_filter }}"
+		MemberAttribute	"{{ group_member_attribute }}"
+	</Group>
+</Authorization>

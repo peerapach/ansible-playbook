@@ -1,0 +1,29 @@
+port 443
+proto tcp
+dev tun
+ca ca.pem
+cert server-cert.pem
+key server-key.pem
+dh dh.pem
+server "{{ vpn_network }}"
+ifconfig-pool-persist ipp.txt
+{% for item in static_route %}
+push "route {{ item.route }} {{ item.netmask }}"
+{% endfor %}
+script-security 2
+{% for item in dhcp_dns %}
+push "dhcp-option DNS {{ item }}"
+{% endfor %}
+push "dhcp-option DOMAIN {{ dhcp_domain }}"
+keepalive 10 120
+cipher AES-128-CBC
+auth SHA256
+comp-lzo
+persist-key
+persist-tun
+status openvpn-status.log
+log /var/log/openvpn.log
+verb 5
+client-cert-not-required
+username-as-common-name
+plugin /usr/lib/openvpn/openvpn-auth-ldap.so /etc/openvpn/auth/auth-ldap.conf

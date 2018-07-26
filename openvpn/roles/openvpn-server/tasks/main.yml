@@ -1,0 +1,55 @@
+---
+- name: Install openvpn
+  package:
+   name: "{{ item }}"
+   state: present
+  with_items:
+  - openvpn
+  - openvpn-auth-ldap
+
+- name: enable ipv4 forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    ignoreerrors: yes
+  failed_when: false  
+
+- name: Allow ports on ufw
+  ufw: 
+    rule: allow
+    port: "{{ item }}"
+  with_items:
+  - 443
+  - 22
+
+- name: Disble access from external
+  ufw: 
+    rule: deny
+    direction: in
+    interface: "{{ external_interface }}"
+
+- name: Allow forward package
+  ufw:
+    rule: allow
+    route: yes
+    dest: 10.0.0.0/8
+
+- name: ufw - setup nat table rules
+  blockinfile:
+    dest: /etc/ufw/before.rules
+    state: present
+    insertbefore: \*filter
+    block: |
+      # OpenVPN config
+      *nat
+      :POSTROUTING ACCEPT [0:0]
+      -A POSTROUTING -s {{openvpn_server_network}} -o {{ external_interface }} -j MASQUERADE
+      COMMIT
+  notify:
+  - restart ufw
+
+- name: Generate cert
+  include: generate_certificate.yml
+
+- name: Config OpenVPN server
+  include: config_openvpn.yml

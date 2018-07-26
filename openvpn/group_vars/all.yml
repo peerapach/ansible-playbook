@@ -1,0 +1,17 @@
+external_interface: ens19
+openvpn_server_network: "10.0.0.0/8"
+vpn_network: "10.8.0.0 255.255.255.0"
+static_route: 
+- { route: "192.168.41.0", netmask: "255.255.255.0" }
+- { route: "10.16.0.0", netmask: "255.255.0.0"}
+dhcp_dns: { "10.16.0.111" }
+dhcp_domain: nipacloud.local
+
+ldap_url: "ldap://10.16.0.111"
+bind_dn: "uid=admin,cn=users,cn=accounts,dc=nipacloud,dc=local"
+ldap_password: "@nipa"
+base_dn: "cn=users,cn=accounts,dc=nipacloud,dc=local"
+ldap_search_filter: "(uid=%u)"
+group_base_dn: "cn=groups,cn=accounts,dc=nipacloud,dc=local"
+group_ldap_search_filter: "(cn=vpn)"
+group_member_attribute: "member"
